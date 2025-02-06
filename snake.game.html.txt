@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #2a2a2a;
+            color: white;
+        }
+        canvas {
+            border: 1px solid #fff;
+            background-color: #333;
+        }
+        #score {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+<div id="score">Score: 0</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const snakeSize = 10;
+    let snake = [{x: 50, y: 50}];
+    let food = {x: 0, y: 0};
+    let direction = 'right';
+    let score = 0;
+
+    // Генерация пищи
+    function generateFood() {
+        food.x = Math.floor(Math.random() * (canvas.width / snakeSize)) * snakeSize;
+        food.y = Math.floor(Math.random() * (canvas.height / snakeSize)) * snakeSize;
+    }
+
+    // Отображение змейки
+    function drawSnake() {
+        ctx.fillStyle = "green";
+        for (let i = 0; i < snake.length; i++) {
+            ctx.fillRect(snake[i].x, snake[i].y, snakeSize, snakeSize);
+        }
+    }
+
+    // Отображение пищи
+    function drawFood() {
+        ctx.fillStyle = "red";
+        ctx.fillRect(food.x, food.y, snakeSize, snakeSize);
+    }
+
+    // Обновление счета
+    function updateScore() {
+        document.getElementById("score").innerText = `Score: ${score}`;
+    }
+
+    // Обработчик клавиш
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "ArrowUp" && direction !== 'down') {
+            direction = 'up';
+        } else if (event.key === "ArrowDown" && direction !== 'up') {
+            direction = 'down';
+        } else if (event.key === "ArrowLeft" && direction !== 'right') {
+            direction = 'left';
+        } else if (event.key === "ArrowRight" && direction !== 'left') {
+            direction = 'right';
+        }
+    });
+
+    // Основная функция игры
+    function gameLoop() {
+        const head = { ...snake[0] };
+
+        if (direction === 'up') head.y -= snakeSize;
+        if (direction === 'down') head.y += snakeSize;
+        if (direction === 'left') head.x -= snakeSize;
+        if (direction === 'right') head.x += snakeSize;
+
+        // Проверка на столкновение с границами
+        if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || collisionWithSelf(head)) {
+            alert("Game Over! Your score: " + score);
+            resetGame();
+            return;
+        }
+
+        snake.unshift(head);
+
+        // Проверка на съедание пищи
+        if (head.x === food.x && head.y === food.y) {
+            score += 1;
+            generateFood();
+        } else {
+            snake.pop();
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSnake();
+        drawFood();
+        updateScore();
+    }
+
+    // Проверка на столкновение змейки с собой
+    function collisionWithSelf(head) {
+        for (let i = 1; i < snake.length; i++) {
+            if (snake[i].x === head.x && snake[i].y === head.y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Сброс игры
+    function resetGame() {
+        snake = [{x: 50, y: 50}];
+        direction = 'right';
+        score = 0;
+        generateFood();
+    }
+
+    // Инициализация игры
+    function init() {
+        generateFood();
+        setInterval(gameLoop, 100);
+    }
+
+    init();
+</script>
+
+</body>
+</html>
